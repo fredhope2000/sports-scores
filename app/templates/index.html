@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b27">
+  <title>Sideline · Scores</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header><div><p class="eyebrow">YOUR PERSONAL SCOREBOARD</p><h1>Sideline<span>.</span></h1></div><span class="league">NFL</span></header>
+    <section class="toolbar" aria-label="Scoreboard controls">
+      <label class="search"><span class="sr-only">Search teams</span><input id="search" type="search" placeholder="Find a team or matchup…" autocomplete="off"></label>
+      <label><span class="sr-only">Game date</span><input id="date" type="date"></label>
+      <button id="today">Today</button><button id="refresh">↻ Refresh</button>
+    </section>
+    <div class="view-controls"><div class="tabs" aria-label="Games shown"><button id="all" aria-pressed="true">All games</button><button id="pinned" aria-pressed="false">Pinned <span id="count">0</span></button></div><button id="clear" class="quiet">Clear pins</button></div>
+    <div class="status-line"><span id="date-label"></span><span id="freshness" role="status">Loading scores…</span></div>
+    <p id="notice" role="status" hidden></p>
+    <div id="games" aria-label="Football games"></div>
+    <footer>Live scores refresh every 30 seconds while this page is open. <span>Data: BALLDONTLIE</span></footer>
+  </main>
+</body>
+</html>
