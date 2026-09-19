@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
+from hashlib import sha256
 import os
 from pathlib import Path
 import secrets
@@ -13,6 +14,7 @@ from fastapi.templating import Jinja2Templates
 import httpx
 
 from app.providers.balldontlie import BallDontLie
+from app.providers.collegefootballdata import CollegeFootballData
 from app.scoreboard import Scoreboard
 
 ROOT = Path(__file__).resolve().parent
@@ -35,7 +37,10 @@ def authenticate(credentials: HTTPBasicCredentials | None = Depends(security)):
 @asynccontextmanager
 async def lifespan(app):
     async with httpx.AsyncClient(timeout=15) as client:
-        app.state.scoreboard = Scoreboard({'nfl': BallDontLie(os.getenv('BALLDONTLIE_API_KEY', ''), client)})
+        app.state.scoreboard = Scoreboard({
+            'nfl': BallDontLie(os.getenv('BALLDONTLIE_API_KEY', ''), client),
+            'cfb': CollegeFootballData(os.getenv('COLLEGEFOOTBALLDATA_API_KEY', ''), client),
+        })
         yield
 
 
@@ -46,7 +51,14 @@ templates = Jinja2Templates(directory=ROOT / 'templates')
 
 @app.get('/', response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse(request=request, name='index.html')
+    asset_versions = {
+        name: sha256((ROOT / 'static' / name).read_bytes()).hexdigest()[:16]
+        for name in ('app.js', 'styles.css')
+    }
+    return templates.TemplateResponse(
+        request=request, name='index.html', context={'asset_versions': asset_versions},
+        headers={'Cache-Control': 'no-cache'},
+    )
 
 
 @app.get('/api/scoreboard')

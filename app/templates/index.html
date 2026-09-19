@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101b27">
   <title>Sideline · Scores</title>
-  <link rel="stylesheet" href="/static/styles.css">
-  <script src="/static/app.js" defer></script>
+  <link rel="stylesheet" href="/static/styles.css?v={{ asset_versions['styles.css'] }}">
+  <script src="/static/app.js?v={{ asset_versions['app.js'] }}" defer></script>
 </head>
 <body>
   <main>
-    <header><div><p class="eyebrow">YOUR PERSONAL SCOREBOARD</p><h1>Sideline<span>.</span></h1></div><span class="league">NFL</span></header>
+    <header><div><p class="eyebrow">YOUR PERSONAL SCOREBOARD</p><h1>Sideline<span>.</span></h1></div><div class="tabs" aria-label="League"><button id="nfl" aria-pressed="true">NFL</button><button id="cfb" aria-pressed="false">CFB</button></div></header>
     <section class="toolbar" aria-label="Scoreboard controls">
       <label class="search"><span class="sr-only">Search teams</span><input id="search" type="search" placeholder="Find a team or matchup…" autocomplete="off"></label>
       <label><span class="sr-only">Game date</span><input id="date" type="date"></label>
@@ -20,7 +20,7 @@
     <div class="status-line"><span id="date-label"></span><span id="freshness" role="status">Loading scores…</span></div>
     <p id="notice" role="status" hidden></p>
     <div id="games" aria-label="Football games"></div>
-    <footer>Live scores refresh every 30 seconds while this page is open. <span>Data: BALLDONTLIE</span></footer>
+    <footer>Live scores refresh every 30 seconds while this page is open. <span id="source">Data: BALLDONTLIE</span></footer>
   </main>
 </body>
 </html>

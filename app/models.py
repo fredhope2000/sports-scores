@@ -18,6 +18,11 @@ class Game(BaseModel):
     away: Team
     period: str | None = None
     clock: str | None = None
+    kickoff_tbd: bool = False
+    situation: str | None = None
+    possession: str | None = None
+    last_play: str | None = None
+    broadcast: str | None = None
 
 
 class ProviderError(Exception):

@@ -1,4 +1,6 @@
 import asyncio
+from hashlib import sha256
+import re
 import httpx
 
 from fastapi.testclient import TestClient
@@ -8,6 +10,29 @@ from app.models import ProviderError
 from app.providers.balldontlie import normalize
 from app.providers.balldontlie import BallDontLie
 from app.scoreboard import Scoreboard
+
+
+def test_asset_urls_change_when_script_changes(monkeypatch, tmp_path):
+    import app.main as main
+
+    monkeypatch.delenv('SCOREBOARD_USERNAME', raising=False)
+    monkeypatch.delenv('SCOREBOARD_PASSWORD', raising=False)
+    static = tmp_path / 'static'
+    static.mkdir()
+    for name in ('app.js', 'styles.css'):
+        (static / name).write_bytes((main.ROOT / 'static' / name).read_bytes())
+    monkeypatch.setattr(main, 'ROOT', tmp_path)
+    with TestClient(app) as client:
+        first = client.get('/')
+        assert first.headers['cache-control'] == 'no-cache'
+        script_url = re.search(r'src="([^"]+)"', first.text).group(1)
+        expected = sha256((static / 'app.js').read_bytes()).hexdigest()[:16]
+        assert script_url == f'/static/app.js?v={expected}'
+        assert client.get(script_url).status_code == 200
+        with (static / 'app.js').open('a') as script:
+            script.write('\n// Updated script\n')
+        second = client.get('/')
+        assert script_url not in second.text
 
 
 def sample():
@@ -70,7 +95,7 @@ def test_routes_and_auth(monkeypatch):
     with TestClient(app) as client:
         assert client.get('/').status_code == 200
         assert client.get('/api/scoreboard?start=2026-09-01&end=2026-10-01').status_code == 400
-        assert client.get('/api/scoreboard?start=2026-09-01&end=2026-09-02&league=cfb').status_code == 400
+        assert client.get('/api/scoreboard?start=2026-09-01&end=2026-09-02&league=invalid').status_code == 400
         monkeypatch.setenv('SCOREBOARD_USERNAME', 'test')
         monkeypatch.setenv('SCOREBOARD_PASSWORD', 'secret')
         assert client.get('/').status_code == 401
