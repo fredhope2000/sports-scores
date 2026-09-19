@@ -8,6 +8,7 @@ let pins = saved, games = [], onlyPinned = false, loading = false, updatedAt = n
 let initial = true, requestedDate = null;
 let league = 'nfl', selectionVersion = 0;
 try { if (localStorage.getItem('sideline.league') === 'cfb') league = 'cfb'; } catch {}
+try { onlyPinned = localStorage.getItem('sideline.view') === 'pinned'; } catch {}
 $('date').value = today();
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function persist() { try { localStorage.setItem('sideline.pins', JSON.stringify(pins)); } catch {} }
@@ -103,8 +104,11 @@ for (const name of ['nfl', 'cfb']) $(name).onclick = () => {
   }
 };
 $('refresh').onclick = refresh;
-$('all').onclick = () => {onlyPinned=false;render();};
-$('pinned').onclick = () => {onlyPinned=true;render();};
+for (const view of ['all', 'pinned']) $(view).onclick = () => {
+  onlyPinned = view === 'pinned';
+  try { localStorage.setItem('sideline.view', view); } catch {}
+  render();
+};
 $('clear').onclick = () => {for (const [id, game] of Object.entries(pins)) if (game && game.league === league) delete pins[id]; persist();render();};
 document.addEventListener('visibilitychange', () => {if (!document.hidden) refresh();});
 setInterval(() => { if (games.some(g => g.state === 'in_progress') || stale || !updatedAt || Date.now()-new Date(updatedAt).getTime() >= 120000) refresh(); },30000);
